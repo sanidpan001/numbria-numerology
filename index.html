@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numbria — Name Numerology Calculator (Pythagorean &amp; Chaldean)</title>
+<meta name="description" content="Numbria is a free name numerology calculator that reveals your name number in both the Pythagorean and Chaldean systems, with letter-by-letter breakdowns, master number detection, per-number readings, a spelling sandbox, and a compatibility checker.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: { indigoDeep:'#1E1B4B', gold:'#D4AF37', ivory:'#FFFBF2' }, fontFamily: { serif:['Georgia','"Times New Roman"','serif'] } } } };
+</script>
+<style>
+  body{ background:#FFFBF2; color:#1E1B4B; }
+  .stars{ background-image: radial-gradient(1.5px 1.5px at 20% 30%, #D4AF37 50%, transparent 50%), radial-gradient(1px 1px at 70% 15%, #fff 50%, transparent 50%), radial-gradient(1.2px 1.2px at 40% 70%, #D4AF37 50%, transparent 50%), radial-gradient(1px 1px at 85% 60%, #fff 50%, transparent 50%), radial-gradient(1.5px 1.5px at 55% 85%, #D4AF37 50%, transparent 50%), radial-gradient(1px 1px at 10% 80%, #fff 50%, transparent 50%), radial-gradient(1px 1px at 30% 10%, #fff 50%, transparent 50%), radial-gradient(1.2px 1.2px at 90% 25%, #D4AF37 50%, transparent 50%); }
+  .gold-ring{ box-shadow: 0 0 0 1px #D4AF37, 0 8px 30px rgba(212,175,55,.18); }
+  .chip{ min-width:2.4rem; }
+  .tab-active{ background:#1E1B4B !important; color:#D4AF37 !important; }
+  .sand-box input{ width:2.6rem; }
+  @media print{ .no-print{ display:none !important; } }
+</style>
+</head>
+<body id="top" class="min-h-screen">
+
+<!-- Sticky header -->
+<header class="sticky top-0 z-50 bg-[#1E1B4B] border-b border-[#D4AF37]/40">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="#top" class="text-2xl font-serif tracking-wide text-[#D4AF37]">&#10022; Numbria</a>
+    <nav class="flex items-center gap-5 text-sm">
+      <a href="#top" class="text-ivory/90 hover:text-[#D4AF37] transition">Home</a>
+      <a href="https://fixoraa.tech" class="text-ivory/90 hover:text-[#D4AF37] transition">More Tools</a>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero / name input -->
+<section class="bg-[#1E1B4B] stars text-ivory">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16 text-center">
+    <div class="inline-flex items-center gap-2 border border-[#D4AF37]/60 rounded-full px-4 py-1.5 text-xs tracking-[0.2em] uppercase text-[#D4AF37] mb-6">
+      <span>&#10022;</span> Unlimited Free Usage <span>&#10022;</span>
+    </div>
+    <h1 class="font-serif text-4xl sm:text-5xl text-[#D4AF37] mb-4">Discover Your Name Number</h1>
+    <p class="text-ivory/80 max-w-2xl mx-auto mb-8">Enter your full name to reveal its hidden vibration in <strong class="text-[#D4AF37]">both</strong> ancient systems at once — Pythagorean (Western) and Chaldean (Babylonian) — complete with a letter-by-letter breakdown, master-number detection, and personal readings.</p>
+    <div class="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
+      <input id="nameInput" type="text" placeholder="e.g. Amelia Hartley" maxlength="60"
+        class="flex-1 rounded-xl bg-white/10 border border-[#D4AF37]/50 text-ivory placeholder-ivory/40 px-5 py-3.5 text-lg outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30">
+      <button id="calcBtn" class="rounded-xl bg-[#D4AF37] text-[#1E1B4B] font-bold px-8 py-3.5 text-lg hover:bg-[#e6c458] transition">Reveal</button>
+    </div>
+    <p id="inputError" class="hidden text-red-300 mt-3 text-sm">Please enter a name containing at least one letter (A–Z).</p>
+    <p class="text-ivory/50 text-xs mt-4">No signup &middot; No paywall &middot; Everything runs privately in your browser</p>
+  </div>
+</section>
+
+<!-- TOP AD -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pt-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <div class="origin-top scale-[0.44] sm:scale-100 shrink-0">
+        <script>
+          atOptions = { 'key' : '4e68ac77881c17fe128a46565d9a4e8c', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+        </script>
+        <script src="https://www.highrevenueformat.com/4e68ac77881c17fe128a46565d9a4e8c/invoke.js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOOL: results ================= -->
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+
+  <!-- Recent names (localStorage) -->
+  <div id="historyWrap" class="hidden mb-8">
+    <p class="text-xs uppercase tracking-[0.18em] text-[#1E1B4B]/60 mb-2">Your recent names</p>
+    <div id="historyChips" class="flex flex-wrap gap-2"></div>
+  </div>
+
+  <!-- Dual result cards -->
+  <div id="resultsWrap" class="hidden">
+    <h2 class="font-serif text-3xl text-center text-[#1E1B4B] mb-1">Dual-System Revelation</h2>
+    <p class="text-center text-[#1E1B4B]/60 mb-8">The same name, read through two ancient lenses — side by side.</p>
+    <div class="grid md:grid-cols-2 gap-6 mb-10">
+
+      <div class="rounded-2xl bg-white border border-[#1E1B4B]/15 p-6 gold-ring">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-serif text-xl text-[#1E1B4B]">Pythagorean <span class="text-sm text-[#1E1B4B]/50">(Western)</span></h3>
+          <span class="text-[10px] uppercase tracking-widest bg-[#1E1B4B] text-[#D4AF37] rounded-full px-3 py-1">A=1 … I=9</span>
+        </div>
+        <p class="text-sm text-[#1E1B4B]/60 mb-4">Sequential alphabet values 1–9. Pythagoras' Greek system, ~600 BCE.</p>
+        <div class="flex items-center justify-center gap-4 mb-5">
+          <div id="pythFinal" class="w-20 h-20 rounded-full bg-[#1E1B4B] text-[#D4AF37] font-serif text-4xl flex items-center justify-center">?</div>
+          <div>
+            <p class="text-xs uppercase tracking-widest text-[#1E1B4B]/50">Name number</p>
+            <p id="pythMaster" class="hidden text-xs font-bold text-amber-700 mt-1">&#9733; MASTER NUMBER</p>
+            <p id="pythSum" class="text-sm text-[#1E1B4B]/70"></p>
+          </div>
+        </div>
+        <p class="text-xs uppercase tracking-widest text-[#1E1B4B]/50 mb-2">Letter breakdown</p>
+        <div id="pythBreak" class="flex flex-wrap gap-1.5 mb-4"></div>
+        <p class="text-xs uppercase tracking-widest text-[#1E1B4B]/50 mb-1">Reduction</p>
+        <p id="pythSteps" class="text-sm text-[#1E1B4B]/80"></p>
+      </div>
+
+      <div class="rounded-2xl bg-[#1E1B4B] text-ivory border border-[#D4AF37]/40 p-6 gold-ring">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-serif text-xl text-[#D4AF37]">Chaldean <span class="text-sm text-ivory/50">(Babylonian)</span></h3>
+          <span class="text-[10px] uppercase tracking-widest bg-[#D4AF37] text-[#1E1B4B] rounded-full px-3 py-1">Sound vibration</span>
+        </div>
+        <p class="text-sm text-ivory/60 mb-4">Sound-vibration values 1–8. 9 is sacred and never assigned to a letter.</p>
+        <div class="flex items-center justify-center gap-4 mb-5">
+          <div id="chaldFinal" class="w-20 h-20 rounded-full bg-[#D4AF37] text-[#1E1B4B] font-serif text-4xl flex items-center justify-center">?</div>
+          <div>
+            <p class="text-xs uppercase tracking-widest text-ivory/50">Name number</p>
+            <p id="chaldMaster" class="hidden text-xs font-bold text-[#D4AF37] mt-1">&#9733; MASTER NUMBER</p>
+            <p id="chaldSum" class="text-sm text-ivory/70"></p>
+          </div>
+        </div>
+        <p class="text-xs uppercase tracking-widest text-ivory/50 mb-2">Letter breakdown</p>
+        <div id="chaldBreak" class="flex flex-wrap gap-1.5 mb-4"></div>
+        <p class="text-xs uppercase tracking-widest text-ivory/50 mb-1">Reduction</p>
+        <p id="chaldSteps" class="text-sm text-ivory/80"></p>
+      </div>
+    </div>
+
+    <!-- Readings -->
+    <div class="rounded-2xl bg-white border border-[#D4AF37]/50 p-6 sm:p-8 mb-10">
+      <h3 class="font-serif text-2xl text-[#1E1B4B] mb-1">&#10022; Your Number Readings</h3>
+      <p class="text-sm text-[#1E1B4B]/60 mb-5">Personality, lucky day and gemstone for each of your numbers.</p>
+      <div id="readingsTabs" class="flex flex-wrap gap-2 mb-5"></div>
+      <div id="readingCard" class="grid sm:grid-cols-3 gap-4"></div>
+      <div class="mt-8">
+        <p class="text-xs uppercase tracking-[0.18em] text-[#1E1B4B]/60 mb-3">Explore every number's meaning</p>
+        <div id="numberGrid" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
+      </div>
+    </div>
+
+    <!-- Spelling sandbox -->
+    <div class="rounded-2xl bg-[#1E1B4B] text-ivory border border-[#D4AF37]/40 p-6 sm:p-8 mb-10">
+      <h3 class="font-serif text-2xl text-[#D4AF37] mb-1">&#10022; Spelling Sandbox</h3>
+      <p class="text-sm text-ivory/60 mb-5">Curious how "Sophia" vs "Sofia" changes your vibration? Edit the letters below and watch both numbers update live.</p>
+      <div class="sand-box flex flex-wrap gap-2 mb-5" id="sandboxLetters"></div>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1 rounded-xl bg-white/5 border border-[#D4AF37]/30 p-4 text-center">
+          <p class="text-xs uppercase tracking-widest text-ivory/50">Pythagorean live</p>
+          <p class="font-serif text-3xl text-[#D4AF37]"><span id="sandPyth">–</span></p>
+          <p id="sandPythNote" class="text-xs text-ivory/50"></p>
+        </div>
+        <div class="flex-1 rounded-xl bg-white/5 border border-[#D4AF37]/30 p-4 text-center">
+          <p class="text-xs uppercase tracking-widest text-ivory/50">Chaldean live</p>
+          <p class="font-serif text-3xl text-[#D4AF37]"><span id="sandChald">–</span></p>
+          <p id="sandChaldNote" class="text-xs text-ivory/50"></p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2 mt-5">
+        <button id="sandAdd" class="text-xs border border-[#D4AF37]/60 text-[#D4AF37] rounded-full px-4 py-1.5 hover:bg-[#D4AF37] hover:text-[#1E1B4B] transition">+ Add letter</button>
+        <button id="sandReset" class="text-xs border border-ivory/30 text-ivory/70 rounded-full px-4 py-1.5 hover:bg-ivory/10 transition">Reset to original</button>
+      </div>
+    </div>
+
+    <!-- Compatibility -->
+    <div class="rounded-2xl bg-white border border-[#1E1B4B]/15 p-6 sm:p-8 mb-4">
+      <h3 class="font-serif text-2xl text-[#1E1B4B] mb-1">&#10022; Compatibility Mode</h3>
+      <p class="text-sm text-[#1E1B4B]/60 mb-5">Enter two names to compare their Pythagorean name numbers and receive a verdict.</p>
+      <div class="grid sm:grid-cols-2 gap-4 mb-5">
+        <input id="compatA" type="text" placeholder="First name (e.g. Aisha)" maxlength="60"
+          class="rounded-xl border border-[#1E1B4B]/25 px-4 py-3 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 bg-ivory">
+        <input id="compatB" type="text" placeholder="Second name (e.g. Arjun)" maxlength="60"
+          class="rounded-xl border border-[#1E1B4B]/25 px-4 py-3 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/30 bg-ivory">
+      </div>
+      <button id="compatBtn" class="rounded-xl bg-[#1E1B4B] text-[#D4AF37] font-bold px-8 py-3 hover:bg-[#2b2763] transition mb-6">Compare Numbers</button>
+      <p id="compatError" class="hidden text-red-600 text-sm mb-4">Both names need at least one letter (A–Z).</p>
+      <div id="compatResult" class="hidden">
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <div class="rounded-xl bg-[#1E1B4B] text-center p-4">
+            <p class="text-xs uppercase tracking-widest text-ivory/50 truncate" id="compatNameA"></p>
+            <p class="font-serif text-4xl text-[#D4AF37]" id="compatNumA"></p>
+          </div>
+          <div class="rounded-xl bg-[#1E1B4B] text-center p-4">
+            <p class="text-xs uppercase tracking-widest text-ivory/50 truncate" id="compatNameB"></p>
+            <p class="font-serif text-4xl text-[#D4AF37]" id="compatNumB"></p>
+          </div>
+        </div>
+        <div class="rounded-xl border border-[#D4AF37]/60 bg-[#FFFBF2] p-5 text-center">
+          <p class="text-xs uppercase tracking-widest text-[#1E1B4B]/50 mb-1">Verdict</p>
+          <p id="compatVerdict" class="font-serif text-2xl text-[#1E1B4B] mb-2"></p>
+          <div class="max-w-xs mx-auto h-2 rounded-full bg-[#1E1B4B]/10 mb-3 overflow-hidden"><div id="compatBar" class="h-full bg-[#D4AF37] rounded-full" style="width:0%"></div></div>
+          <p id="compatText" class="text-sm text-[#1E1B4B]/75 max-w-xl mx-auto"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts reference -->
+  <div class="grid md:grid-cols-2 gap-6 mt-12">
+    <div class="rounded-2xl bg-white border border-[#1E1B4B]/15 p-6">
+      <h4 class="font-serif text-lg text-[#1E1B4B] mb-3">Pythagorean Chart</h4>
+      <div id="pythChart" class="text-sm leading-7 text-[#1E1B4B]/80"></div>
+    </div>
+    <div class="rounded-2xl bg-[#1E1B4B] text-ivory border border-[#D4AF37]/40 p-6">
+      <h4 class="font-serif text-lg text-[#D4AF37] mb-3">Chaldean Chart</h4>
+      <div id="chaldChart" class="text-sm leading-7 text-ivory/80"></div>
+    </div>
+  </div>
+</main>
+
+<script id="numbria-core">
+'use strict';
+/* Numbria core — pure functions, no DOM. Tested with node. */
+var PYTHAGOREAN_MAP = {A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8};
+var CHALDEAN_MAP = {A:1,I:1,J:1,Q:1,Y:1,B:2,K:2,R:2,C:3,G:3,L:3,S:3,D:4,M:4,T:4,E:5,H:5,N:5,X:5,U:6,V:6,W:6,O:7,Z:7,F:8,P:8};
+
+function letterValue(ch, system) {
+  var c = String(ch).toUpperCase();
+  var map = (system === 'chaldean') ? CHALDEAN_MAP : PYTHAGOREAN_MAP;
+  if (c < 'A' || c > 'Z') return 0;
+  return map[c] || 0;
+}
+function cleanLetters(name) {
+  return String(name).toUpperCase().split('').filter(function(c){ return c >= 'A' && c <= 'Z'; });
+}
+function reduceNumber(n) {
+  var steps = [n], cur = n;
+  while (cur > 9 && cur !== 11 && cur !== 22 && cur !== 33) {
+    cur = String(cur).split('').reduce(function(a, d){ return a + Number(d); }, 0);
+    steps.push(cur);
+  }
+  return { final: cur, steps: steps, isMaster: (cur === 11 || cur === 22 || cur === 33) };
+}
+function analyzeName(name, system) {
+  var letters = cleanLetters(name).map(function(ch){ return { char: ch, value: letterValue(ch, system) }; });
+  var total = letters.reduce(function(a, b){ return a + b.value; }, 0);
+  var r = reduceNumber(total);
+  return { name: name, letters: letters, total: total, steps: r.steps, final: r.final, isMaster: r.isMaster };
+}
+var READINGS = {
+  1:  { title:'The Leader',        personality:'Independent, pioneering and driven. You are here to forge your own path, lead by example and turn original ideas into action.', luckyDay:'Sunday',    gemstone:'Ruby' },
+  2:  { title:'The Diplomat',      personality:'Gentle, cooperative and deeply intuitive. You build bridges, sense unspoken feelings and bring harmony wherever you go.', luckyDay:'Monday',    gemstone:'Pearl' },
+  3:  { title:'The Creator',       personality:'Expressive, optimistic and magnetic. Words, art and laughter are your tools; you light up rooms and inspire with your imagination.', luckyDay:'Thursday',  gemstone:'Yellow Sapphire' },
+  4:  { title:'The Builder',       personality:'Practical, disciplined and dependable. You turn chaos into order with patience and methodical effort, brick by steady brick.', luckyDay:'Saturday',  gemstone:'Blue Sapphire' },
+  5:  { title:'The Explorer',      personality:'Adaptable, freedom-loving and quick-witted. You crave variety, travel and new experiences, and thrive on change itself.', luckyDay:'Wednesday', gemstone:'Emerald' },
+  6:  { title:'The Nurturer',      personality:'Responsible, loving and harmony-seeking. Home, family and community are sacred to you; people feel safe in your care.', luckyDay:'Friday',    gemstone:'Diamond' },
+  7:  { title:'The Mystic',        personality:'Analytical, introspective and spiritual. You seek truth beneath the surface, and solitude sharpens your remarkable insight.', luckyDay:'Monday',    gemstone:"Cat's Eye" },
+  8:  { title:'The Achiever',      personality:'Ambitious, authoritative and resilient. You master the material world with executive judgment and turn pressure into power.', luckyDay:'Saturday',  gemstone:'Blue Sapphire' },
+  9:  { title:'The Humanitarian',  personality:'Compassionate, idealistic and generous. You are here to serve the greater good, and your empathy is your greatest strength.', luckyDay:'Tuesday',   gemstone:'Red Coral' },
+  11: { title:'The Inspirer (Master)',      personality:'A master number. Heightened intuition and spiritual vision — you are a channel between the inner and outer worlds, here to enlighten and uplift.', luckyDay:'Monday',   gemstone:'Moonstone' },
+  22: { title:'The Master Builder',         personality:'A master number. The most powerful of all — you turn grand visions into concrete reality on a scale that benefits humanity.', luckyDay:'Saturday', gemstone:'Blue Sapphire' },
+  33: { title:'The Master Healer',          personality:'A master number. The rarest frequency — unconditional love, healing and compassionate service to the world at large.', luckyDay:'Friday',   gemstone:'Rose Quartz' }
+};
+function getReading(num) { return READINGS[num] || null; }
+function rootOf(n) { var r = reduceNumber(n); return (r.isMaster) ? reduceNumber(r.final).steps.slice(-1)[0] : r.final; }
+function rootOfStrict(n) { var cur = n; while (cur > 9) { cur = String(cur).split('').reduce(function(a,d){ return a + Number(d); }, 0); } return cur; }
+var HARMONIOUS = { 1:[5,7], 2:[4,8], 3:[6,9], 4:[2,8], 5:[1,7], 6:[3,9], 7:[1,5], 8:[2,4], 9:[3,6] };
+function compatibilityVerdict(n1, n2) {
+  var r1 = rootOfStrict(n1), r2 = rootOfStrict(n2);
+  if (r1 === r2) return { score: 95, verdict: 'Mirror Match', text: 'You vibrate on exactly the same frequency (' + r1 + ' & ' + r2 + '). This is a rare resonance — mutual understanding comes naturally, though you must guard against doubling each other\'s weaknesses.' };
+  if (HARMONIOUS[r1] && HARMONIOUS[r1].indexOf(r2) !== -1) return { score: 82, verdict: 'Harmonious Bond', text: 'Numbers ' + r1 + ' and ' + r2 + ' flow together beautifully. Your energies complement rather than compete — this pairing tends to bring out the best in both names.' };
+  return { score: 60, verdict: 'Growth Match', text: 'Numbers ' + r1 + ' and ' + r2 + ' move to different rhythms. This is not a mismatch — it is an invitation: the friction between your vibrations can spark real personal growth if you stay patient with each other.' };
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { letterValue: letterValue, cleanLetters: cleanLetters, reduceNumber: reduceNumber, analyzeName: analyzeName, getReading: getReading, compatibilityVerdict: compatibilityVerdict, READINGS: READINGS, PYTHAGOREAN_MAP: PYTHAGOREAN_MAP, CHALDEAN_MAP: CHALDEAN_MAP };
+}
+</script>
+
+<!-- BOTTOM AD -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pb-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="464498"></script>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SEO ARTICLE + FAQ ================= -->
+<section class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+<article id="seo-article" class="prose prose-lg max-w-none text-[#1E1B4B]/85">
+<h2 class="font-serif text-3xl text-[#1E1B4B] mb-6">Name Numerology: The Complete Guide to Pythagorean and Chaldean Name Numbers</h2>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">What is name numerology?</h3>
+<p>Name numerology is the ancient practice of converting the letters of a person's name into numbers and reading the resulting vibration as a window into personality, strengths, lucky influences, and life direction. It rests on one central idea: letters are not just marks on paper — they carry sound, rhythm, and energy. When those energies are translated into numbers, patterns emerge that numerologists have interpreted for thousands of years. Unlike birth-date numerology, which is fixed the moment you are born, name numerology studies the identity you carry through the world every day. It is the number attached to the name people call you, the signature you write, the brand you build. Because of that, many practitioners consider the name number the most personal of all core numbers — it describes how you present yourself and the first impression your very identity makes.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">The Pythagorean system: order and logic</h3>
+<p>The Pythagorean system is named after the Greek philosopher and mathematician Pythagoras, who lived around 600 BCE and taught that the universe itself was built on number. His followers believed numbers were the hidden architecture of reality — that music, geometry, astronomy, and even the soul could all be understood through numerical relationships. In the Pythagorean method, letters are numbered in simple alphabetical sequence: A equals 1, B equals 2, C equals 3, and so on through I equals 9, after which the cycle repeats — J equals 1, K equals 2, all the way to Z equals 8. Every letter from A to Z receives a value between 1 and 9, and the values are added together, then reduced digit by digit until a single digit (or a master number) remains.</p>
+<p>Because the mapping is sequential and uses the full range of 1 through 9, the Pythagorean system feels logical and transparent. It is the dominant system in the Western world, and it is the method behind most name-number calculators you find online. Its strength is clarity: the chart is easy to memorize, the calculation is easy to verify by hand, and the results are easy to interpret. Its limitation, according to its critics, is that the values follow alphabet order rather than the actual sound of the letters — which is exactly where the older Chaldean system claims its advantage.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">The Chaldean system: sound and vibration</h3>
+<p>Chaldean numerology is far older than the Pythagorean method. It originates in ancient Babylon — the land of the Chaldeans, in what is now Iraq — and dates back three to five thousand years. It passed through Greek, Persian, Arabic, and Indian traditions, and it remains the primary system used in India today. Where Pythagoras assigned numbers by alphabet position, the Chaldeans assigned numbers by sound vibration: each letter receives a value from 1 to 8 based on the phonetic energy of its spoken sound, not its place in the alphabet. Letters that sound similar share a number. Thus A, I, J, Q, and Y all carry the value 1; B, K, and R carry 2; C, G, L, and S carry 3; D, M, and T carry 4; E, H, N, and X carry 5; U, V, and W carry 6; O and Z carry 7; and F and P carry 8.</p>
+<p>The most distinctive feature of the Chaldean chart is what it leaves out: the number 9 is never assigned to any letter. In Chaldean philosophy, 9 is sacred — the number of completion and divine energy — and it is reserved for compound totals, never given to an individual letter. A name total may legitimately reduce to 9, but no single letter may begin with that vibration. Another classical Chaldean rule is that the system works best with the name you actually use — the name people speak aloud — because it is the sound of the name that generates its vibration. That is why many Chaldean numerologists calculate using a person's current or common name rather than the full birth-certificate name.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">Why the two systems often disagree</h3>
+<p>One of the most fascinating things about running a name through both systems is how often they produce different answers. Take the name "RAVI": in Pythagorean calculation it totals 5, while in Chaldean calculation it totals 1 — leadership versus freedom, two very different readings from the same four letters. The disagreement is not an error; it is the natural result of two different philosophies. Pythagorean values reward alphabet position, so letters late in the alphabet score high. Chaldean values reward sound, so phonetically related letters cluster together regardless of where they sit in the alphabet. Neither system claims the other is wrong — they simply measure different things. Western practitioners tend to describe the Pythagorean result as the personality you show the world, and the Chaldean result as the deeper energetic current running beneath it. When both systems agree on a number, numerologists read that as an especially strong and consistent vibration.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">How reduction works — and why master numbers are never reduced</h3>
+<p>Both systems use the same reduction process: add all the letter values together, then add the digits of that total together, repeating until you reach a single digit. If your letters sum to 38, for example, you compute 3 + 8 = 11 — and then you stop, because 11 is a master number. Master numbers are 11, 22, and 33 (some schools also recognize 44). They are never reduced to a single digit. The classical teaching is that a master number carries both its own high-frequency energy and the energy of its reduced root — 11 carries the vision of 11 and the cooperation of 2; 22 carries the grand building power of 22 and the discipline of 4; 33 carries the healing compassion of 33 and the nurturing of 6. Master numbers are traditionally described as carrying greater potential and greater challenge: more insight, but also more inner tension. Because they are rare and powerful, a name calculator should always flag them clearly rather than silently reducing them away.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">What your name number reveals: personality, lucky day, and gemstone</h3>
+<p>Each root number from 1 to 9 has a traditional profile. Number 1 is the leader — independent and pioneering, associated with Sunday and the ruby. Number 2 is the diplomat — gentle and cooperative, linked to Monday and the pearl. Number 3 is the creator — expressive and optimistic, tied to Thursday and the yellow sapphire. Number 4 is the builder — practical and disciplined, connected to Saturday and the blue sapphire. Number 5 is the explorer — adaptable and freedom-loving, aligned with Wednesday and the emerald. Number 6 is the nurturer — responsible and harmony-seeking, associated with Friday and the diamond. Number 7 is the mystic — analytical and spiritual, linked to Monday and the cat's eye. Number 8 is the achiever — ambitious and authoritative, tied to Saturday and the blue sapphire. Number 9 is the humanitarian — compassionate and idealistic, connected to Tuesday and the red coral. These associations come from the long intertwining of numerology with astrology: each number is traditionally ruled by a planet, and each planet has its day of the week and its gemstone. Treat them as tools for reflection and self-awareness — a symbolic vocabulary for thinking about your own tendencies — rather than as predictions.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">The spelling sandbox: how tiny changes shift your vibration</h3>
+<p>Because name numerology works letter by letter, even small spelling changes can shift the final number — and the Chaldean system, with its sound-based values, is especially sensitive to them. This is why parents, authors, and entrepreneurs have long consulted numerologists when choosing or adjusting names: changing "Sofia" to "Sophia," adding a middle name, or switching to a nickname can all move the total from one root number to another. A spelling sandbox makes this experimentation instant and visual. Try removing a double letter, swapping a vowel, or shortening a name to its everyday form, and watch both the Pythagorean and Chaldean numbers respond in real time. It is an excellent way to develop an intuitive feel for which letters carry the most weight in each system — and it demonstrates, better than any explanation, why the two systems so often disagree.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">Name compatibility: comparing two vibrations</h3>
+<p>Numerology has long been used to explore the chemistry between two people — partners, co-founders, or even a person and a business name. The principle is simple: each name reduces to a root number, and certain number pairs are considered naturally harmonious while others require more conscious effort. In the classical groupings, 1 harmonizes with 5 and 7; 2 with 4 and 8; 3 with 6 and 9; and the reverse holds in each case. Two identical numbers form a "mirror" — deep mutual understanding with the risk of amplified shared weaknesses. A pairing outside the harmonious groups is not a bad omen; numerologists describe it as a growth match, where the friction between different rhythms can teach both parties something essential. Compatibility readings are best used as conversation starters about values and working styles, not as verdicts on a relationship.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">Which system should you trust?</h3>
+<p>There is no scientific evidence that name numbers influence destiny, and honest numerologists will tell you that these systems are tools for self-reflection, not fortune-telling. That said, millions of people find them meaningful — as a mirror, not a map. If you value logic and transparency, start with the Pythagorean system: its sequential chart is easy to verify and its interpretations are the most widely documented in Western books. If you are drawn to the mystical side and want the system favored by Indian tradition and Cheiro's famous readings, explore the Chaldean system: its sound-based values and sacred treatment of 9 give it a different, older flavor. Many serious students use both — the Pythagorean number for the outer personality and the Chaldean number for the inner current — and read the tension or agreement between the two as the richest insight of all. Whichever you choose, the real value lies in the questions the numbers prompt you to ask about yourself.</p>
+
+<h3 class="font-serif text-2xl text-[#1E1B4B] mt-8 mb-3">Getting the most out of your reading</h3>
+<p>A name-number reading works best when you treat it as a starting point rather than a label. Notice which parts of your reading feel true and which feel off — the friction is often more revealing than the agreement. If you are comparing systems, look at your Pythagorean and Chaldean numbers together: do they tell the same story, or do they describe two different sides of you? If you found a master number, read both the master interpretation and its reduced root, since tradition says you carry both. And if you used the spelling sandbox, remember the classical Chaldean advice: the name that matters most is the one people actually speak. Whatever your number turns out to be, use it as a lens for self-awareness — a 1,200-word article can introduce the ideas, but the real exploration happens when you sit with the numbers and reflect on your own life.</p>
+</article>
+
+<!-- FAQs -->
+<div class="mt-12">
+<h2 class="font-serif text-3xl text-[#1E1B4B] mb-6 text-center">Frequently Asked Questions</h2>
+<div class="space-y-4">
+<div class="faq-item rounded-xl bg-white border border-[#1E1B4B]/15 p-5">
+<p class="faq-q font-bold text-[#1E1B4B] mb-2">What is my name number and how is it calculated?</p>
+<p class="text-[#1E1B4B]/75 text-sm leading-6">Your name number is the single-digit (or master-number) total of your full name. Each letter is converted to a number using a letter chart — Pythagorean (A=1, B=2 … I=9, then repeating) or Chaldean (sound-based values 1–8) — the values are summed, and the total is reduced by adding its digits until one digit remains. Master numbers 11, 22, and 33 are never reduced further.</p>
+</div>
+<div class="faq-item rounded-xl bg-white border border-[#1E1B4B]/15 p-5">
+<p class="faq-q font-bold text-[#1E1B4B] mb-2">What is the difference between a Pythagorean and a Chaldean numerology calculator?</p>
+<p class="text-[#1E1B4B]/75 text-sm leading-6">A Pythagorean calculator numbers letters sequentially by alphabet position (1–9 repeating), following the Greek system of Pythagoras. A Chaldean calculator uses the ancient Babylonian sound-vibration chart, assigning values 1–8 based on how letters sound, with 9 considered sacred and never assigned to a letter. The same name often gives different results in each system.</p>
+</div>
+<div class="faq-item rounded-xl bg-white border border-[#1E1B4B]/15 p-5">
+<p class="faq-q font-bold text-[#1E1B4B] mb-2">Why is the number 9 not assigned to any letter in Chaldean numerology?</p>
+<p class="text-[#1E1B4B]/75 text-sm leading-6">In Chaldean tradition, 9 is sacred — the number of completion, divine energy, and universal love. It is deliberately kept out of the letter chart so that it appears only as a compound total, making a final 9 feel spiritually significant rather than ordinary.</p>
+</div>
+<div class="faq-item rounded-xl bg-white border border-[#1E1B4B]/15 p-5">
+<p class="faq-q font-bold text-[#1E1B4B] mb-2">What are master numbers 11, 22, and 33 in name numerology?</p>
+<p class="text-[#1E1B4B]/75 text-sm leading-6">Master numbers are double-digit totals (11, 22, 33) that are never reduced to a single digit. 11 is the Inspirer (heightened intuition), 22 is the Master Builder (turning grand visions into reality), and 33 is the Master Healer (unconditional love and service). Tradition says they carry both the master energy and the reduced root (2, 4, 6) — greater potential paired with greater inner tension.</p>
+</div>
+<div class="faq-item rounded-xl bg-white border border-[#1E1B4B]/15 p-5">
+<p class="faq-q font-bold text-[#1E1B4B] mb-2">Should I use my full birth name or the name I actually go by?</p>
+<p class="text-[#1E1B4B]/75 text-sm leading-6">It depends on the system. Pythagorean tradition usually starts from the full birth-certificate name, while classical Chaldean teaching prefers the name you are actually called, since it is the spoken sound that generates the vibration. Many people calculate both and compare — the difference itself can be illuminating.</p>
+</div>
+<div class="faq-item rounded-xl bg-white border border-[#1E1B4B]/15 p-5">
+<p class="faq-q font-bold text-[#1E1B4B] mb-2">Is name numerology scientifically proven?</p>
+<p class="text-[#1E1B4B]/75 text-sm leading-6">No — there is no scientific evidence that name numbers influence events or destiny. Numerology is best understood as a symbolic system for self-reflection: the personality profiles, lucky days, and gemstones associated with each number offer a vocabulary for thinking about your own tendencies, not predictions about your future.</p>
+</div>
+</div>
+</div>
+</section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "What is my name number and how is it calculated?", "acceptedAnswer": { "@type": "Answer", "text": "Your name number is the single-digit (or master-number) total of your full name. Each letter is converted to a number using a letter chart — Pythagorean (A=1, B=2 … I=9, then repeating) or Chaldean (sound-based values 1–8) — the values are summed, and the total is reduced by adding its digits until one digit remains. Master numbers 11, 22, and 33 are never reduced further." } },
+    { "@type": "Question", "name": "What is the difference between a Pythagorean and a Chaldean numerology calculator?", "acceptedAnswer": { "@type": "Answer", "text": "A Pythagorean calculator numbers letters sequentially by alphabet position (1–9 repeating), following the Greek system of Pythagoras. A Chaldean calculator uses the ancient Babylonian sound-vibration chart, assigning values 1–8 based on how letters sound, with 9 considered sacred and never assigned to a letter. The same name often gives different results in each system." } },
+    { "@type": "Question", "name": "Why is the number 9 not assigned to any letter in Chaldean numerology?", "acceptedAnswer": { "@type": "Answer", "text": "In Chaldean tradition, 9 is sacred — the number of completion, divine energy, and universal love. It is deliberately kept out of the letter chart so that it appears only as a compound total, making a final 9 feel spiritually significant rather than ordinary." } },
+    { "@type": "Question", "name": "What are master numbers 11, 22, and 33 in name numerology?", "acceptedAnswer": { "@type": "Answer", "text": "Master numbers are double-digit totals (11, 22, 33) that are never reduced to a single digit. 11 is the Inspirer (heightened intuition), 22 is the Master Builder (turning grand visions into reality), and 33 is the Master Healer (unconditional love and service). Tradition says they carry both the master energy and the reduced root (2, 4, 6)." } },
+    { "@type": "Question", "name": "Should I use my full birth name or the name I actually go by?", "acceptedAnswer": { "@type": "Answer", "text": "Pythagorean tradition usually starts from the full birth-certificate name, while classical Chaldean teaching prefers the name you are actually called, since it is the spoken sound that generates the vibration. Many people calculate both and compare." } },
+    { "@type": "Question", "name": "Is name numerology scientifically proven?", "acceptedAnswer": { "@type": "Answer", "text": "No — there is no scientific evidence that name numbers influence events or destiny. Numerology is best understood as a symbolic system for self-reflection: the profiles, lucky days, and gemstones offer a vocabulary for thinking about your own tendencies, not predictions about your future." } }
+  ]
+}
+</script>
+
+<footer class="bg-[#1E1B4B] border-t border-[#D4AF37]/40 mt-8">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <span class="font-serif text-xl text-[#D4AF37]">&#10022; Numbria</span>
+    <p class="text-ivory/50 text-xs text-center">Free name numerology calculator — Pythagorean &amp; Chaldean systems. For reflection and entertainment.</p>
+    <nav class="flex gap-5 text-sm">
+      <a href="#top" class="text-ivory/70 hover:text-[#D4AF37]">Home</a>
+      <a href="https://fixoraa.tech" class="text-ivory/70 hover:text-[#D4AF37]">More Tools</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var currentName = '';
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function breakHTML(letters, dark){
+    return letters.map(function(l){
+      return '<span class="chip inline-flex flex-col items-center rounded-lg border ' +
+        (dark ? 'border-[#D4AF37]/40 bg-white/5' : 'border-[#1E1B4B]/20 bg-[#FFFBF2]') +
+        ' px-2 py-1.5"><span class="font-bold ' + (dark ? 'text-[#D4AF37]' : 'text-[#1E1B4B]') + '">' + esc(l.char) + '</span>' +
+        '<span class="text-[11px] ' + (dark ? 'text-ivory/60' : 'text-[#1E1B4B]/60') + '">' + l.value + '</span></span>';
+    }).join('');
+  }
+  function stepsHTML(steps){
+    return steps.map(function(s,i){
+      return i === steps.length - 1
+        ? '<strong class="text-[#D4AF37] bg-[#1E1B4B] rounded px-2 py-0.5">' + s + '</strong>'
+        : esc(String(s)) + ' <span class="text-[#D4AF37]">&rarr;</span> ';
+    }).join('');
+  }
+  function readingCards(nums){
+    $('readingCard').innerHTML = nums.map(function(n){
+      var r = getReading(n);
+      var master = (n === 11 || n === 22 || n === 33);
+      return '<div class="rounded-xl border ' + (master ? 'border-[#D4AF37] bg-[#1E1B4B] text-ivory' : 'border-[#1E1B4B]/15 bg-[#FFFBF2]') + ' p-4">' +
+        '<div class="flex items-center gap-3 mb-2"><div class="w-11 h-11 rounded-full ' + (master ? 'bg-[#D4AF37] text-[#1E1B4B]' : 'bg-[#1E1B4B] text-[#D4AF37]') + ' font-serif text-xl flex items-center justify-center shrink-0">' + n + '</div>' +
+        '<p class="font-serif text-lg ' + (master ? 'text-[#D4AF37]' : 'text-[#1E1B4B]') + '">' + esc(r.title) + '</p></div>' +
+        '<p class="text-sm ' + (master ? 'text-ivory/75' : 'text-[#1E1B4B]/70') + ' mb-3">' + esc(r.personality) + '</p>' +
+        '<p class="text-sm"><span class="font-bold">Lucky day:</span> ' + esc(r.luckyDay) + '</p>' +
+        '<p class="text-sm"><span class="font-bold">Gemstone:</span> ' + esc(r.gemstone) + '</p></div>';
+    }).join('');
+  }
+  function saveHistory(name){
+    try{
+      var h = JSON.parse(localStorage.getItem('numbria-history') || '[]');
+      h = [name].concat(h.filter(function(x){ return x !== name; })).slice(0, 8);
+      localStorage.setItem('numbria-history', JSON.stringify(h));
+      renderHistory();
+    }catch(e){}
+  }
+  function renderHistory(){
+    var h = [];
+    try{ h = JSON.parse(localStorage.getItem('numbria-history') || '[]'); }catch(e){}
+    if(!h.length){ $('historyWrap').classList.add('hidden'); return; }
+    $('historyWrap').classList.remove('hidden');
+    $('historyChips').innerHTML = h.map(function(n){
+      return '<button class="hist-chip text-xs border border-[#D4AF37]/60 text-[#1E1B4B] rounded-full px-4 py-1.5 hover:bg-[#D4AF37] hover:text-white transition" data-name="' + esc(n) + '">' + esc(n) + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.hist-chip'), function(b){
+      b.addEventListener('click', function(){ $('nameInput').value = b.getAttribute('data-name'); doCalc(); });
+    });
+  }
+
+  function doCalc(){
+    var name = $('nameInput').value.trim();
+    var letters = cleanLetters(name);
+    if(!letters.length){
+      $('inputError').classList.remove('hidden');
+      $('resultsWrap').classList.add('hidden');
+      return;
+    }
+    $('inputError').classList.add('hidden');
+    currentName = name;
+    var py = analyzeName(name, 'pythagorean');
+    var ch = analyzeName(name, 'chaldean');
+
+    $('pythFinal').textContent = py.final;
+    $('pythSum').textContent = 'Letters sum to ' + py.total;
+    $('pythMaster').classList.toggle('hidden', !py.isMaster);
+    $('pythBreak').innerHTML = breakHTML(py.letters, false);
+    $('pythSteps').innerHTML = stepsHTML(py.steps);
+
+    $('chaldFinal').textContent = ch.final;
+    $('chaldSum').textContent = 'Letters sum to ' + ch.total;
+    $('chaldMaster').classList.toggle('hidden', !ch.isMaster);
+    $('chaldBreak').innerHTML = breakHTML(ch.letters, true);
+    $('chaldSteps').innerHTML = stepsHTML(ch.steps);
+
+    var tabs = [['Pythagorean ' + py.final, py.final, 'pyth'], ['Chaldean ' + ch.final, ch.final, 'chald']];
+    $('readingsTabs').innerHTML = tabs.map(function(t, i){
+      return '<button class="read-tab rounded-full border border-[#1E1B4B]/25 px-4 py-1.5 text-sm font-bold ' + (i===0 ? 'tab-active' : 'text-[#1E1B4B]') + '" data-num="' + t[1] + '">' + esc(t[0]) + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.read-tab'), function(b){
+      b.addEventListener('click', function(){
+        Array.prototype.forEach.call(document.querySelectorAll('.read-tab'), function(x){ x.classList.remove('tab-active'); });
+        b.classList.add('tab-active');
+        readingCards([Number(b.getAttribute('data-num'))]);
+      });
+    });
+    readingCards([py.final, ch.final]);
+
+    buildSandbox(name);
+    $('resultsWrap').classList.remove('hidden');
+    saveHistory(name);
+    $('resultsWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ---- spelling sandbox ---- */
+  var sandLetters = [];
+  function buildSandbox(name){
+    sandLetters = cleanLetters(name);
+    renderSandbox();
+  }
+  function renderSandbox(){
+    var box = $('sandboxLetters');
+    box.innerHTML = '';
+    sandLetters.forEach(function(ch, i){
+      var inp = document.createElement('input');
+      inp.value = ch; inp.maxLength = 1;
+      inp.setAttribute('aria-label', 'Letter ' + (i+1));
+      inp.className = 'rounded-lg bg-white/10 border border-[#D4AF37]/50 text-[#D4AF37] font-bold text-center text-lg py-2 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/40 uppercase';
+      inp.addEventListener('input', function(){
+        var v = inp.value.toUpperCase().replace(/[^A-Z]/g, '').slice(-1);
+        if(v){ sandLetters[i] = v; inp.value = v; } else { sandLetters.splice(i, 1); }
+        renderSandbox();
+      });
+      box.appendChild(inp);
+    });
+    var word = sandLetters.join('');
+    if(word){
+      var py = analyzeName(word, 'pythagorean'), ch = analyzeName(word, 'chaldean');
+      $('sandPyth').textContent = py.final;
+      $('sandPythNote').textContent = 'sum ' + py.total + (py.isMaster ? ' — master number' : '');
+      $('sandChald').textContent = ch.final;
+      $('sandChaldNote').textContent = 'sum ' + ch.total + (ch.isMaster ? ' — master number' : '');
+    } else {
+      $('sandPyth').textContent = '–'; $('sandPythNote').textContent = '';
+      $('sandChald').textContent = '–'; $('sandChaldNote').textContent = '';
+    }
+  }
+
+  /* ---- compatibility ---- */
+  function doCompat(){
+    var a = $('compatA').value.trim(), b = $('compatB').value.trim();
+    if(!cleanLetters(a).length || !cleanLetters(b).length){
+      $('compatError').classList.remove('hidden');
+      $('compatResult').classList.add('hidden');
+      return;
+    }
+    $('compatError').classList.add('hidden');
+    var na = analyzeName(a, 'pythagorean').final;
+    var nb = analyzeName(b, 'pythagorean').final;
+    var v = compatibilityVerdict(na, nb);
+    $('compatNameA').textContent = a; $('compatNumA').textContent = na;
+    $('compatNameB').textContent = b; $('compatNumB').textContent = nb;
+    $('compatVerdict').textContent = v.verdict;
+    $('compatText').textContent = v.text;
+    $('compatResult').classList.remove('hidden');
+    var bar = $('compatBar'); bar.style.width = '0%';
+    setTimeout(function(){ bar.style.transition = 'width 0.8s ease'; bar.style.width = v.score + '%'; }, 50);
+  }
+
+  /* ---- charts + number explorer ---- */
+  function renderCharts(){
+    function chartHTML(map){
+      var rows = {};
+      Object.keys(map).forEach(function(L){ var v = map[L]; (rows[v] = rows[v] || []).push(L); });
+      return Object.keys(rows).sort(function(a,b){return a-b;}).map(function(v){
+        return '<div><span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#D4AF37] text-[#1E1B4B] text-xs font-bold mr-2">' + v + '</span>' + rows[v].join(' &nbsp;') + '</div>';
+      }).join('');
+    }
+    $('pythChart').innerHTML = chartHTML(PYTHAGOREAN_MAP);
+    $('chaldChart').innerHTML = chartHTML(CHALDEAN_MAP) + '<p class="text-xs text-ivory/50 mt-2">9 is sacred and never assigned to a letter.</p>';
+  }
+  function renderNumberGrid(){
+    var nums = [1,2,3,4,5,6,7,8,9,11,22,33];
+    $('numberGrid').innerHTML = nums.map(function(n){
+      var master = n > 9;
+      return '<button class="num-cell rounded-xl border ' + (master ? 'border-[#D4AF37] bg-[#1E1B4B] text-[#D4AF37]' : 'border-[#1E1B4B]/20 bg-white text-[#1E1B4B]') + ' py-3 text-center hover:shadow-md transition" data-num="' + n + '">' +
+        '<span class="font-serif text-2xl">' + n + '</span><br><span class="text-[11px] opacity-70">' + esc(getReading(n).title.split(' (')[0]) + '</span></button>';
+    }).join('');
+    Array.prototype.forEach.call(document.querySelectorAll('.num-cell'), function(b){
+      b.addEventListener('click', function(){
+        readingCards([Number(b.getAttribute('data-num'))]);
+        document.querySelector('#readingCard').scrollIntoView({ behavior:'smooth', block:'center' });
+      });
+    });
+  }
+
+  $('calcBtn').addEventListener('click', doCalc);
+  $('nameInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') doCalc(); });
+  $('compatBtn').addEventListener('click', doCompat);
+  $('sandAdd').addEventListener('click', function(){ sandLetters.push('A'); renderSandbox(); });
+  $('sandReset').addEventListener('click', function(){ if(currentName) buildSandbox(currentName); });
+
+  renderCharts(); renderNumberGrid(); renderHistory();
+})();
+</script>
+</body>
+</html>
